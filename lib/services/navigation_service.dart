@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:letschat_app/pages/home_page.dart';
 import 'package:letschat_app/pages/login_page.dart';
+import 'package:letschat_app/pages/register_page.dart';
 import 'package:path/path.dart';
 
 class NavigationService {
@@ -8,6 +9,7 @@ class NavigationService {
 
   final Map<String,Widget Function(BuildContext)> _routes ={ // creating a map for the routes
     "/login" : (context) => LoginPage(),
+    "/register" : (context) => RegisterPage(),
     "/home" : (context) => HomePage(),
   };
 

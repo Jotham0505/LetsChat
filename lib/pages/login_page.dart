@@ -134,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget createAnAccount(){
-    return Expanded(
+    return Expanded( // this is the create an account function
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,

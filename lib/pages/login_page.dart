@@ -141,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
         mainAxisSize: MainAxisSize.max,
         children: [
           Text("Don't have an account?",),
-          GestureDetector(child: Text('Sign Up',style: TextStyle(fontWeight: FontWeight.w800),),onTap: (){_navigationService.pushNamed('register');},)
+          GestureDetector(child: Text('Sign Up',style: TextStyle(fontWeight: FontWeight.w800),),onTap: (){_navigationService.pushNamed('/register');},)
         ],
       ),
     );

@@ -3,8 +3,10 @@ import 'package:get_it/get_it.dart';
 import 'package:letschat_app/firebase_options.dart';
 import 'package:letschat_app/services/alert_service.dart';
 import 'package:letschat_app/services/auth_service.dart';
+import 'package:letschat_app/services/database_service.dart';
 import 'package:letschat_app/services/media_service.dart';
 import 'package:letschat_app/services/navigation_service.dart';
+import 'package:letschat_app/services/storage_service.dart';
 
 Future<void> setupFirebase() async{
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -16,4 +18,6 @@ Future<void> registerService() async{
   getIt.registerSingleton<NavigationService>(NavigationService());
   getIt.registerSingleton<AlertService>(AlertService());
   getIt.registerSingleton<MediaService>(MediaService());
+  getIt.registerSingleton<StorageService>(StorageService());
+  getIt.registerSingleton<DatabaseService>(DatabaseService());
 }

@@ -2,9 +2,13 @@ import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:letschat_app/consts.dart';
 import 'package:flutter/material.dart';
+import 'package:letschat_app/models/user_profile.dart';
+import 'package:letschat_app/services/alert_service.dart';
 import 'package:letschat_app/services/auth_service.dart';
+import 'package:letschat_app/services/database_service.dart';
 import 'package:letschat_app/services/media_service.dart';
 import 'package:letschat_app/services/navigation_service.dart';
+import 'package:letschat_app/services/storage_service.dart';
 import 'package:letschat_app/widgets/customFormField.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -16,20 +20,28 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
 
+  final GlobalKey<FormState> _registerFormKey = GlobalKey();
   final GetIt _getit = GetIt.instance;
+  late AlertService _alertService;
+  late DatabaseService _databaseService;
+  late StorageService _storageService;
   late MediaService _mediaService;
   late NavigationService _navigationService;
   late AuthService _authService;
-  String ? email, password, name;
-  File ? selectedImage;
+  String? email, password, name;
+  File? selectedImage;
+  bool isLoading = false;
 
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _mediaService = _getit.get<MediaService>();
     _navigationService = _getit.get<NavigationService>();
     _authService = _getit.get<AuthService>();
+    _storageService = _getit.get<StorageService>();
+    _databaseService = _getit.get<DatabaseService>();
+    _alertService = _getit.get<AlertService>();
   }
 
   @override
@@ -50,8 +62,14 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           children: [
             headertext(),
-            RegisterForm(),
-            alreadyHaveAnAccount()
+            if (!isLoading) RegisterForm(),
+            if (!isLoading) alreadyHaveAnAccount(),
+            if (isLoading)
+              Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
           ],
         ),
       ),
@@ -79,6 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
         vertical: MediaQuery.sizeOf(context).height * 0.05
       ),
       child: Form(
+        key: _registerFormKey,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -100,7 +119,7 @@ class _RegisterPageState extends State<RegisterPage> {
               validationRegEx: EMAIL_VALIDATION_REGEX,
               onSaved: (value) {
                 setState(() {
-                  name = email;
+                  email = value;
                 });
               },
             ),
@@ -111,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
               validationRegEx: PASSWORD_VALIDATION_REGEX,
               onSaved: (value) {
                 setState(() {
-                  name = password;
+                  password = value;
                 });
               },
             ),
@@ -120,16 +139,55 @@ class _RegisterPageState extends State<RegisterPage> {
               height: 45,
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  if (_registerFormKey.currentState!.validate()) {
+                    _registerFormKey.currentState!.save();
+                    if (selectedImage == null) {
+                      print('Error shoing the profile picture');
+                    } else {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      try {
+                        bool result = await _authService.signup(email!, password!);
+                        if (result) {
+                          String ? pfpURL = await _storageService.uploadUserPFP(file: selectedImage!, uid: _authService.user!.uid);
+                          if (pfpURL != null) {
+                           await _databaseService.createUserProfile(
+                              userProfile: UserProfile(
+                                  uid: _authService.user!.uid,
+                                  name: name,
+                                  pfpURL: pfpURL),
+                            );
+                            _alertService.ShowToast(text: 'User Registered Successfully', icon: Icons.check);
+                            _navigationService.goBack();
+                            _navigationService.pushReplacementNamed('/home');
+                          }else{
+                            throw Exception('Unable to upload user profile picture');
+                          }
+                        }
+                        else{
+                          throw Exception('Unable to register the user');
+                        }
+                        print(result);
+                      } catch (e) {
+                        print(e);
+                        _alertService.ShowToast(text: 'Failed to register, Please try again!',icon: Icons.error);
+                      }
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
+                  }
+                },
                 child: Text('Sign up'),
               ),
-            ),
+            )
           ],
         ),
       ),
     );
   }
-
 
   Widget PrflPicSelectionField(){
     return GestureDetector(
@@ -151,7 +209,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget alreadyHaveAnAccount(){
-    return Expanded( // this is the create an account function
+    return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,

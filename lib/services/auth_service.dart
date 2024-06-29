@@ -1,5 +1,4 @@
 
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -27,6 +26,19 @@ class AuthService {
       print(e);
     }
     return false; // the user has not entered the credntials i.e that credentials of the user is null
+  }
+
+  Future<bool> signup(String email, String password) async{
+    try {
+      final credential = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+      if (credential.user != null) {
+        _user =credential.user;
+        return true;
+      }
+    } catch (e) {
+      print(e);
+    }
+    return false;
   }
 
   void authStateChangesStreamListner (User ? user){

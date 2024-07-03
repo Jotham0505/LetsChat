@@ -7,8 +7,8 @@ import 'package:letschat_app/services/database_service.dart';
 import 'package:letschat_app/services/navigation_service.dart';
 import 'package:letschat_app/widgets/chat_tile.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {   // this is the home page which consists of the list of chats 
+  const HomePage({super.key});   
 
   @override
   State<HomePage> createState() => _HomePageState();
